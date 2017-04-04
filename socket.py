@@ -14,7 +14,7 @@ class Socket:
         self.server_socket.bind((IP, self.PORT))
         self.server_socket.listen(numberOfSender)
  
-        self.READER_LIST.append(server_socket)
+        self.READER_LIST.append(self.server_socket)
 
     def run(self):
         while True:
