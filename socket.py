@@ -16,6 +16,10 @@ class Socket:
  
         self.READER_LIST.append(self.server_socket)
 
+        self.SOCK_ADDR_PAIR = {}
+
+        self.inbox = {}
+
     def run(self):
         while True:
             read_sockets,write_sockets,error_sockets = select.select(self.READER_LIST,self.WRITER_LIST,[])
@@ -24,9 +28,28 @@ class Socket:
                 pass #TODO
 
             for sock in read_sockets:
+                if sock == self.server_socket:
+                    sockfd, addr = self.server_socket.accept()
+                    self.SOCK_ADDR_PAIR[sockfd] = addr
+                    self.READER_LIST.append(sockfd)
+                else:
+                    self.inbox[sock.recv(self.RECV_BUFFER)] = self.SOCK_ADDR_PAIR[sock]
+
+
                 pass #TODO
-            
+
+
         self.server_socket.close()
+
+    def lookForMessage(self, message):
+        while message not in self.inbox.keys():
+            pass
+
+        targetip = self.inbox[message][0]
+        del self.inbox[message]
+
+        return targetip
+
 
     def addToReadList(self):
         pass
