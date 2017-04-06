@@ -33,7 +33,7 @@ class SocketService:
         self.server_socket.close()
 
     def run(self):
-        read_sockets, write_sockets, error_sockets = select.select(self.READER_LIST, self.WRITER_LIST, [])
+        read_sockets, write_sockets, error_sockets = select.select(self.READER_LIST, self.WRITER_LIST, [], 1)
 
         # for sock in write_sockets:
         #     pass
@@ -46,12 +46,12 @@ class SocketService:
                 self.ADDR_DB[sock_fd] = addr
                 self.READER_LIST.append(sock_fd)
 
-                log.info("node " + str(self.node.myInfo.id) + "@" + self.node.myInfo.ip + " accepted connection from " + addr[0])
+                log.info("node " + self.node.myInfo.to_str() + " accepted connection from " + addr[0])
             else:
                 # handle new request
                 try:
                     data = sock.recv(self.RECV_BUFFER)
-                    log.info(self.node.myInfo.to_str() + " recived a message from " + self.ADDR_DB[sock][0] + " : " + data)
+                    log.info(self.node.myInfo.to_str() + " received a message from " + self.ADDR_DB[sock][0] + " : " + data)
                     response = self.node.message.handle_message(Message(data, self.ADDR_DB[sock][0]))
 
                     if response:
@@ -62,15 +62,6 @@ class SocketService:
                     log.info(self.ADDR_DB[sock][0] + " left node " + self.node.myInfo.to_str())
                     self.READER_LIST.remove(sock)
                     del self.ADDR_DB[sock]
-
-    # def lookForMessage(self, message):
-    #     while message not in self.inbox.keys():
-    #         pass
-    #
-    #     target_ip = self.inbox[message][0]
-    #     del self.inbox[message]
-    #
-    #     return target_ip
 
     def send_message(self, server_ip, message, need_reply=False):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -83,6 +74,3 @@ class SocketService:
             return reply
 
         client_socket.close()
-
-        # def recvMessage(self, ip):
-        #     pass

@@ -1,6 +1,7 @@
 import argparse
 import fcntl
 import struct
+import sys
 import logging
 from Node import *
 from common import *
@@ -13,6 +14,7 @@ def get_ip_address(ifname):
         0x8915,  # SIOCGIFADDR
         struct.pack('256s', ifname[:15])
     )[20:24])
+
 
 def parse_args():
     # args parsing
@@ -62,17 +64,17 @@ def start():
             my_node = create_static_node(args.id, args.ip, args.nextid, args.nextip)
         else:
             my_node = create_static_node(args.id, args.ip)
-            while True:
-                my_node.socket.run()
-                log.debug(my_node.__str__())
 
+    while True:
+        my_node.socket.run()
+        log.debug("\n" + my_node.__str__())
 
     CLI().printHelp()
     cmd, arg = CLI().getInputCommand()
 
     if cmd == "INSERT":
         arg = json.loads(arg)
-        my_node.insertValue(arg['key'], arg['value'])
+        my_node.insert_value(arg['key'], arg['value'])
     elif cmd == "INFO":
         my_node.print_info()
 

@@ -3,6 +3,9 @@ from NodeInfo import *
 from common import *
 
 
+def create_message_string(title, data):
+    return json.dumps({"title": title, "data": data})
+
 class Message:
     def __init__(self, message, sender_address):
         self.title = json.loads(message)['title']
@@ -21,6 +24,10 @@ class MessageFormat:
         self.acceptFrom.append(sender_ip)
         return self
 
+    def set_handler(self, handler_function):
+        self.handler = handler_function
+        return self
+
 
 class MessageService:
     def __init__(self, node):
@@ -35,8 +42,6 @@ class MessageService:
 
     def handle_message(self, message):
         if self.formats_db[message.title]:
-            if message.title == "SET_PREV":
-                self.node.set_prev_info(NodeInfo(message.data['id'], message.data['ip']))
-                log.info("prev_node set on " + self.node.myInfo.to_str())
+            return self.formats_db[message.title].handler(self.node, message)
         else:
             print "message not recognized: " + message
