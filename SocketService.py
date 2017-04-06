@@ -1,13 +1,15 @@
 import socket
 import select
 from Message import *
+from common import *
+
 
 SERVER_PORT = 12000
 CLIENT_PORT = 12001
 
 
 class SocketService:
-    def __init__(self, node, port=SERVER_PORT, number_of_sender=4, ip="127.0.0.1", buffer_size=4096):
+    def __init__(self, node, port=SERVER_PORT, number_of_sender=4, ip="0.0.0.0", buffer_size=10240):
         self.node = node
         self.READER_LIST = []
         self.WRITER_LIST = []
@@ -22,6 +24,8 @@ class SocketService:
 
         self.READER_LIST.append(self.server_socket)
 
+        log.info("node " + str(self.node.myInfo.id) + "@" + self.node.myInfo.ip + " server started")
+
         self.ADDR_DB = {}  # key: socket fd, value: address
         # self.inbox = {}
 
@@ -29,33 +33,35 @@ class SocketService:
         self.server_socket.close()
 
     def run(self):
-        while True:
-            read_sockets, write_sockets, error_sockets = select.select(self.READER_LIST, self.WRITER_LIST, [])
+        read_sockets, write_sockets, error_sockets = select.select(self.READER_LIST, self.WRITER_LIST, [])
 
-            # for sock in write_sockets:
-            #     pass
+        # for sock in write_sockets:
+        #     pass
 
-            for sock in read_sockets:
-                if sock == self.server_socket:
-                    # accept new connection
-                    sock_fd, addr = self.server_socket.accept()
+        for sock in read_sockets:
+            if sock == self.server_socket:
+                # accept new connection
+                sock_fd, addr = self.server_socket.accept()
 
-                    self.ADDR_DB[sock_fd] = addr
-                    self.READER_LIST.append(sock_fd)
-                else:
-                    # handle new request
-                    try:
-                        # self.inbox[sock.recv(self.RECV_BUFFER)] = self.ADDR_DB[sock]
-                        data = sock.recv(self.RECV_BUFFER)
-                        response = self.node.message.handle_message(Message(data, self.ADDR_DB[sock]))
+                self.ADDR_DB[sock_fd] = addr
+                self.READER_LIST.append(sock_fd)
 
-                        if response:
-                            sock.sendall(response)
-                    except any:
-                        # if connection is closed
-                        sock.close()
-                        self.READER_LIST.remove(sock)
-                        del self.ADDR_DB[sock]
+                log.info("node " + str(self.node.myInfo.id) + "@" + self.node.myInfo.ip + " accepted connection from " + addr[0])
+            else:
+                # handle new request
+                try:
+                    data = sock.recv(self.RECV_BUFFER)
+                    log.info(self.node.myInfo.to_str() + " recived a message from " + self.ADDR_DB[sock][0] + " : " + data)
+                    response = self.node.message.handle_message(Message(data, self.ADDR_DB[sock][0]))
+
+                    if response:
+                        sock.sendall(response)
+                except:
+                    # if connection is closed
+                    sock.close()
+                    log.info(self.ADDR_DB[sock][0] + " left node " + self.node.myInfo.to_str())
+                    self.READER_LIST.remove(sock)
+                    del self.ADDR_DB[sock]
 
     # def lookForMessage(self, message):
     #     while message not in self.inbox.keys():
@@ -66,18 +72,17 @@ class SocketService:
     #
     #     return target_ip
 
-    @classmethod
-    def send_message(cls, server_ip, message, need_reply=False):
+    def send_message(self, server_ip, message, need_reply=False):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((server_ip, SERVER_PORT))
         client_socket.sendall(message)
 
         if need_reply:
-            reply = client_socket.recv()  # TODO: check reply if needed
+            reply = client_socket.recv(self.RECV_BUFFER)
             client_socket.close()
             return reply
 
         client_socket.close()
 
-    # def recvMessage(self, ip):
-    #     pass
+        # def recvMessage(self, ip):
+        #     pass

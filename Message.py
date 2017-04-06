@@ -1,5 +1,6 @@
 import json
-from Node import NodeInfo
+from NodeInfo import *
+from common import *
 
 
 class Message:
@@ -7,6 +8,7 @@ class Message:
         self.title = json.loads(message)['title']
         self.data = json.loads(message)['data']
         self.sender_address = sender_address
+        log.info("message created : " + message)
 
 
 class MessageFormat:
@@ -35,5 +37,6 @@ class MessageService:
         if self.formats_db[message.title]:
             if message.title == "SET_PREV":
                 self.node.set_prev_info(NodeInfo(message.data['id'], message.data['ip']))
+                log.info("prev_node set on " + self.node.myInfo.to_str())
         else:
             print "message not recognized: " + message

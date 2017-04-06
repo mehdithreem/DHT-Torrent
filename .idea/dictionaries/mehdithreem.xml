@@ -2,7 +2,11 @@
   <dictionary name="mehdithreem">
     <words>
       <w>addr</w>
+      <w>asctime</w>
+      <w>ifname</w>
+      <w>levelname</w>
       <w>recv</w>
+      <w>siocgifaddr</w>
     </words>
   </dictionary>
 </component>
