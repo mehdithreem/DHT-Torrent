@@ -33,16 +33,17 @@ def parse_args():
 
     return parser.parse_args()
 
-class CLI:
-    def printHelp(self):
-        print '''
-        INSERT {"key": KEY, "value": VALUE}'''
 
-    def getInputCommand(self):
-        inputLine = raw_input()
-        cmd = inputLine.split(" ")[0]
+def cli_print_help():
+    help = "commands [case-insensitive]:\n"
+    help += "\tINSERT KEY :: VALUE\t\t[inserts a key-value into DHT\n"
+    help += "\tINFO\t\t[prints current node information\n"
 
-        return cmd, ''.join(inputLine.split(" ")[1:])
+
+def cli_parse_command(line):
+    cmd = line.split(" ")[0]
+
+    return cmd.upper(), ' '.join(line.split(" ")[1:])
 
 
 def setup_logging():
@@ -65,19 +66,25 @@ def start():
         else:
             my_node = create_static_node(args.id, args.ip)
 
-    while True:
-        my_node.socket.run()
-        log.debug("\n" + my_node.__str__())
-
-    CLI().printHelp()
-    cmd, arg = CLI().getInputCommand()
-
-    if cmd == "INSERT":
-        arg = json.loads(arg)
-        my_node.insert_value(arg['key'], arg['value'])
-    elif cmd == "INFO":
-        my_node.print_info()
-
+    cli_print_help()
+    try:
+        while True:
+            my_node.socket.run()
+            if sys.stdin in select.select([sys.stdin], [], [], 2)[0]:
+                line = sys.stdin.readline()
+                if not line:
+                    break
+                cmd, arg = cli_parse_command(line)
+                if cmd == "INSERT":
+                    key, value = arg.split("::")
+                    my_node.insert_value(key.strip(), value.strip())
+                elif cmd == "INFO":
+                    log.info("\n" + my_node.to_str())
+    except KeyboardInterrupt:
+        pass
+    finally:
+        log.info(my_node.myInfo.to_str() + " disconnected.")
+        print "terminated"
 
 if __name__ == '__main__':
     start()

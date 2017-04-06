@@ -33,7 +33,7 @@ class SocketService:
         self.server_socket.close()
 
     def run(self):
-        read_sockets, write_sockets, error_sockets = select.select(self.READER_LIST, self.WRITER_LIST, [], 1)
+        read_sockets, write_sockets, error_sockets = select.select(self.READER_LIST, self.WRITER_LIST, [], 2)
 
         # for sock in write_sockets:
         #     pass

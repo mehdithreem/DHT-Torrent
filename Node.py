@@ -25,10 +25,14 @@ class Node:
             return_str += "\tNext Node: " + str(self.nextNode.id) + "@" + str(self.nextNode.ip) + "\n"
         if self.prevNode:
             return_str += "\tPrev Node: " + str(self.prevNode.id) + "@" + str(self.prevNode.ip) + "\n"
-        return_str += "\n====== HashTable ======\n"
-        for key in self.hashTable:
-            return_str += key + " : " + self.hashTable[key]
+        if len(self.hashTable):
+            return_str += "\n====== HashTable ======\n"
+            for key in self.hashTable:
+                return_str += key + " : " + self.hashTable[key]
         return return_str
+
+    def to_str(self):
+        return self.__str__()
 
     def set_next_info(self, next_info):
         self.nextNode = next_info
