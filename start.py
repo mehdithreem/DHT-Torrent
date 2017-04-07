@@ -86,7 +86,8 @@ def start():
                         key, value = arg.split("::")
                         my_node.insert_value(key.strip(), value.strip())
                     elif cmd.startswith("LOOKUP"):
-                        my_node.lookup_key(arg.strip())
+                        val = my_node.lookup_key(arg.strip())
+                        print arg.strip() + " :: " + val
                     elif cmd.startswith("INFO"):
                         log.info("\n" + my_node.to_str())
                     elif cmd.startswith("PYTHON"):

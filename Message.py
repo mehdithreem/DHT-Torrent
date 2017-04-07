@@ -11,7 +11,6 @@ class Message:
         self.title = json.loads(message)['title']
         self.data = json.loads(message)['data']
         self.sender_address = sender_address
-        log.info("message created : " + message)
 
 
 class MessageFormat:
