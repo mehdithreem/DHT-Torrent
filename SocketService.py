@@ -27,10 +27,12 @@ class SocketService:
         log.info("node " + str(self.node.myInfo.id) + "@" + self.node.myInfo.ip + " server started")
 
         self.ADDR_DB = {}  # key: socket fd, value: address
-        # self.inbox = {}
+        self.CLIENT_CONNECTIONS = {}  # key: server_ip, value: socket
 
     def __del__(self):
         self.server_socket.close()
+        for key in self.CLIENT_CONNECTIONS.keys():
+            self.CLIENT_CONNECTIONS[key].close()
 
     def run(self):
         read_sockets, write_sockets, error_sockets = select.select(self.READER_LIST, self.WRITER_LIST, [], 2)
@@ -65,13 +67,15 @@ class SocketService:
                     del self.ADDR_DB[sock]
 
     def send_message(self, server_ip, message, need_reply=False):
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((server_ip, SERVER_PORT))
+        client_socket = self.CLIENT_CONNECTIONS.get(server_ip)
+        if not client_socket:
+            log.info(self.node.myInfo.to_str() + " created a connection with " + server_ip)
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_socket.connect((server_ip, SERVER_PORT))
+            self.CLIENT_CONNECTIONS[server_ip] = client_socket
+
         client_socket.sendall(message)
 
         if need_reply:
             reply = client_socket.recv(self.RECV_BUFFER)
-            client_socket.close()
             return reply
-
-        client_socket.close()

@@ -39,7 +39,11 @@ def cli_get_help():
     help = "commands [case-insensitive]:\n"
     help += "\tINSERT KEY :: VALUE\t\t[inserts a key-value into DHT]\n"
     help += "\tLOOKUP KEY\t\t[lookup a value in DHT]\n"
+    help += "\tREMOVE KEY\t\t[remove a key from DHT]\n"
+    help += "\tPYTHON CODE\t\t[run python code for debug]\n"
     help += "\tINFO\t\t[prints current node information]\n"
+    help += "\tHELP\t\t[lookup a value in DHT]\n"
+    help += "\tEXIT\t\t[terminate node]\n"
 
     return help
 
@@ -88,10 +92,14 @@ def start():
                     elif cmd.startswith("LOOKUP"):
                         val = my_node.lookup_key(arg.strip())
                         print arg.strip() + " :: " + val
+                    elif cmd.startswith("REMOVE"):
+                        val = my_node.remove_key(arg.strip())
                     elif cmd.startswith("INFO"):
                         log.info("\n" + my_node.to_str())
                     elif cmd.startswith("PYTHON"):
                         exec arg
+                    elif cmd.startswith("EXIT"):
+                        break
                     else:
                         log.info("unknown command")
             except Exception as e:

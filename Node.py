@@ -115,6 +115,29 @@ class Node:
             self.socket.send_message(ip, create_message_string(mf.DHT_LOOKUP__FOUND_VAL, {'key': hashed_key, 'value': value}))
             log.info("{" + str(hashed_key) + "::" + value + "} sent to " + ip)
 
+    def remove_key(self, key):
+        hashed_key = dht_hash(key)
+        hashed_key = int(key)  # TODO: remove this
+        prev_id = self.prevNode.id if self.prevNode else -float('Inf')
+        if prev_id < hashed_key < self.myInfo.id:
+            log.info("{" + str(key) + "::" + self.hashTable[hashed_key] + "} directly removed from " + self.myInfo.to_str())
+            del self.hashTable[hashed_key]
+
+        self.remove_recursive(hashed_key)
+        log.info("{" + str(key) + "} will be removed")
+
+    def remove_recursive(self, hashed_key):
+        prev_id = self.prevNode.id if self.prevNode else -float('Inf')
+        if hashed_key > self.myInfo.id and self.nextNode:
+            self.socket.send_message(self.nextNode.ip, create_message_string(mf.DHT_REMOVE__KEY_SEARCH, {'key': hashed_key}))
+            log.info("remove {" + str(hashed_key) + "} sent to " + self.nextNode.to_str())
+        elif prev_id >= hashed_key:
+            self.socket.send_message(self.prevNode.ip, create_message_string(mf.DHT_REMOVE__KEY_SEARCH, {'key': hashed_key}))
+            log.info("remove {" + str(hashed_key) + "} sent to " + self.prevNode.to_str())
+        else:
+            value = self.hashTable.get(hashed_key)
+            log.info("{" + str(hashed_key) + "::" + value + "} removed from " + self.myInfo.to_str())
+
 
 def create_static_node(node_id, node_ip, next_node_id=None, next_node_ip=None):
     node = Node(node_id, node_ip)
