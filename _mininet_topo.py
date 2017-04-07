@@ -56,20 +56,20 @@ def simpleTest():
     h5 = net.get('h5')
     h6 = net.get('h6')
 
-    net.startTerms()
 
     for host in [h1, h2, h3, h4, h5, h6]:
-        host.cmd('cd /media/sf_DHT-Torrent')
+        host.cmdPrint('cd /media/sf_DHT-Torrent')
 
-    h1.cmd('echo python start.py --static --id 600 --ip ' + h1.IP())
-    h2.cmd('echo python start.py --static --id 500 --ip ' + h2.IP() + " --nextpeerid 600 --nextpeerip " + h1.IP())
-    h3.cmd('echo python start.py --static --id 400 --ip ' + h3.IP() + " --nextpeerid 500 --nextpeerip " + h2.IP())
-    h4.cmd('echo python start.py --static --id 300 --ip ' + h4.IP() + " --nextpeerid 400 --nextpeerip " + h3.IP())
-    h5.cmd('echo python start.py --static --id 200 --ip ' + h5.IP() + " --nextpeerid 300 --nextpeerip " + h4.IP())
-    h6.cmd('echo python start.py --static --id 100 --ip ' + h6.IP() + " --nextpeerid 200 --nextpeerip " + h5.IP())
+    h1.cmdPrint('echo \'python /media/sf_DHT-Torrent/start.py --static --id 600 --ip ' + h1.IP() + ' \' > h1.sh')
+    h2.cmdPrint('echo \'python /media/sf_DHT-Torrent/start.py --static --id 500 --ip ' + h2.IP() + " --nextpeerid 600 --nextpeerip " + h1.IP() + ' \' > h2.sh')
+    h3.cmdPrint('echo \'python /media/sf_DHT-Torrent/start.py --static --id 400 --ip ' + h3.IP() + " --nextpeerid 500 --nextpeerip " + h2.IP() + ' \' > h3.sh')
+    h4.cmdPrint('echo \'python /media/sf_DHT-Torrent/start.py --static --id 300 --ip ' + h4.IP() + " --nextpeerid 400 --nextpeerip " + h3.IP() + ' \' > h4.sh')
+    h5.cmdPrint('echo \'python /media/sf_DHT-Torrent/start.py --static --id 200 --ip ' + h5.IP() + " --nextpeerid 300 --nextpeerip " + h4.IP() + ' \' > h5.sh')
+    h6.cmdPrint('echo \'python /media/sf_DHT-Torrent/start.py --static --id 100 --ip ' + h6.IP() + " --nextpeerid 200 --nextpeerip " + h5.IP() + ' \' > h6.sh')
 
-    h1.cmdPrint('ls')
+    # h1.cmdPrint('ls')
 
+    net.startTerms()
     CLI(net)
     # CLI(net).do_xterm(h1)
 

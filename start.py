@@ -3,6 +3,7 @@ import fcntl
 import struct
 import sys
 import logging
+import traceback
 from Node import *
 from common import *
 
@@ -34,16 +35,19 @@ def parse_args():
     return parser.parse_args()
 
 
-def cli_print_help():
+def cli_get_help():
     help = "commands [case-insensitive]:\n"
-    help += "\tINSERT KEY :: VALUE\t\t[inserts a key-value into DHT\n"
-    help += "\tINFO\t\t[prints current node information\n"
+    help += "\tINSERT KEY :: VALUE\t\t[inserts a key-value into DHT]\n"
+    help += "\tLOOKUP KEY\t\t[lookup a value in DHT]\n"
+    help += "\tINFO\t\t[prints current node information]\n"
+
+    return help
 
 
 def cli_parse_command(line):
     cmd = line.split(" ")[0]
 
-    return cmd.upper(), ' '.join(line.split(" ")[1:])
+    return cmd.upper().strip('\n'), ' '.join(line.split(" ")[1:]).strip('\n')
 
 
 def setup_logging():
@@ -66,22 +70,35 @@ def start():
         else:
             my_node = create_static_node(args.id, args.ip)
 
-    cli_print_help()
+    print cli_get_help()
     try:
         while True:
-            my_node.socket.run()
-            if sys.stdin in select.select([sys.stdin], [], [], 2)[0]:
-                line = sys.stdin.readline()
-                if not line:
-                    break
-                cmd, arg = cli_parse_command(line)
-                if cmd == "INSERT":
-                    key, value = arg.split("::")
-                    my_node.insert_value(key.strip(), value.strip())
-                elif cmd == "INFO":
-                    log.info("\n" + my_node.to_str())
+            try:
+                my_node.socket.run()
+                if sys.stdin in select.select([sys.stdin], [], [], 2)[0]:
+                    line = sys.stdin.readline()
+                    if not line:
+                        break
+                    cmd, arg = cli_parse_command(line)
+                    if cmd.startswith("HELP"):
+                        print cli_get_help()
+                    elif cmd.startswith("INSERT"):
+                        key, value = arg.split("::")
+                        my_node.insert_value(key.strip(), value.strip())
+                    elif cmd.startswith("LOOKUP"):
+                        my_node.lookup_key(arg.strip())
+                    elif cmd.startswith("INFO"):
+                        log.info("\n" + my_node.to_str())
+                    elif cmd.startswith("PYTHON"):
+                        exec arg
+                    else:
+                        log.info("unknown command")
+            except Exception as e:
+                log.error(str(e))
+                log.error(traceback.format_exc())
+                continue
     except KeyboardInterrupt:
-        pass
+        print "KeyboardInterrupt"
     finally:
         log.info(my_node.myInfo.to_str() + " disconnected.")
         print "terminated"

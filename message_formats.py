@@ -10,7 +10,8 @@ def DHT_INSERT__KEY_SEARCH(node, message):
     node.find_proper_node_for_key(message.data['key'], message.data['ip'])
 
 def DHT_INSERT__GET_VALUE(node, message):
-    return node.fetch_pending_value(message['key'])
+    log.debug("DHT_INSERT__GET_VALUE call")
+    return node.fetch_pending_value(message.data['key'])
 
 # messages are json objects:
 # { "title" : TITLE, "data" : DATA }

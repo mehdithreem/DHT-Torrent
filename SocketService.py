@@ -56,6 +56,7 @@ class SocketService:
 
                     if response:
                         sock.sendall(response)
+                        log.info("response has sent to " + self.ADDR_DB[sock][0])
                 except:
                     # if connection is closed
                     sock.close()
